@@ -16,24 +16,13 @@
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 50% { transform: translateX(8px); } 75% { transform: translateX(-8px); } }
         .animate-shake { animation: shake 0.4s ease-in-out; border: 2px solid #ef4444 !important; }
         
-        @keyframes shrinkFade {
-            0% { transform: scale(1); opacity: 1; filter: blur(0); }
-            100% { transform: scale(0.8); opacity: 0; filter: blur(10px); }
-        }
-        .animate-delete { animation: shrinkFade 0.4s ease forwards; }
-
-        @keyframes shimmer {
-            100% { transform: translateX(100%); }
-        }
+        @keyframes shimmer { 100% { transform: translateX(100%); } }
 
         .facility-check:checked + .fac-card { background-color: #eff6ff; border-color: #3b82f6; }
         .facility-check:checked + .fac-card i { color: #2563eb; }
         .facility-check:checked + .fac-card p { color: #1e40af; }
         .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
         
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
         .swal2-popup {
             padding: 2rem !important;
             border-radius: 2.5rem !important;
@@ -59,10 +48,10 @@
 
         <section id="hero" class="relative h-[70vh] flex items-center pt-20 overflow-hidden">
             <div class="absolute inset-0 z-0">
-                <template x-if="media.fotos.length > 0">
+                <template x-if="media.fotos && media.fotos.length > 0">
                     <img :src="media.fotos[0]" class="w-full h-full object-cover">
                 </template>
-                <template x-if="media.fotos.length === 0">
+                <template x-if="!media.fotos || media.fotos.length === 0">
                     <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=80" class="w-full h-full object-cover">
                 </template>
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
@@ -79,7 +68,6 @@
                     <h2 class="text-3xl font-bold text-slate-800">Unit Unggulan Kami</h2>
                     <div class="w-20 h-1 bg-emerald-500 mx-auto mt-4"></div>
                 </div>
-
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <template x-for="(u, index) in daftarUnit" :key="index">
                         <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100 group">
@@ -102,14 +90,12 @@
             <div class="max-w-7xl mx-auto px-6">
                 <div class="text-center mb-16">
                     <h2 class="text-3xl font-bold text-slate-800">Fasilitas Hunian</h2>
-                    <p class="text-slate-500 mt-2 text-sm">Kenyamanan lengkap untuk kualitas hidup yang lebih baik</p>
                     <div class="w-20 h-1 bg-blue-500 mx-auto mt-4"></div>
                 </div>
-
                 <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-6">
                     <template x-for="item in allFasilitas" :key="item.name">
-                        <template x-if="fasilitas.includes(item.name)">
-                            <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col items-center justify-center transition-all duration-500 hover:shadow-xl hover:-translate-y-2 group">
+                        <template x-if="fasilitas && fasilitas.includes(item.name)">
+                            <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col items-center justify-center transition hover:shadow-xl hover:-translate-y-2 group">
                                 <div class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mb-4 group-hover:bg-blue-600 transition-colors duration-300">
                                     <i :class="item.icon" class="text-blue-600 text-xl group-hover:text-white"></i>
                                 </div>
@@ -174,26 +160,22 @@
 
             <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border">
                 <div class="flex justify-between items-center mb-8">
-                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">3. Unit Unggulan (Card View)</label>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">3. Unit Unggulan</label>
                     <button @click="tambahUnitBaru()" class="bg-blue-600 text-white px-5 py-2 rounded-xl font-bold text-xs shadow-lg hover:bg-blue-700 transition">
                         <i class="fas fa-plus mr-2"></i> Tambah Card
                     </button>
                 </div>
-
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <template x-for="(u, index) in daftarUnit" :key="index">
-                        <div class="p-6 border-2 border-slate-100 rounded-[2rem] bg-slate-50 relative transition-all duration-300">
+                        <div class="p-6 border-2 border-slate-100 rounded-[2rem] bg-slate-50 relative">
                             <button @click="daftarUnit.splice(index, 1)" class="absolute -top-2 -right-2 bg-red-500 text-white w-8 h-8 rounded-full shadow-lg hover:bg-red-600 transition z-10">
                                 <i class="fas fa-times text-xs"></i>
                             </button>
-                            
                             <div class="grid grid-cols-3 gap-4">
-                                <div class="col-span-1">
-                                    <div @click="document.getElementById('inputCard' + index).click()" class="w-full aspect-square rounded-2xl bg-white border-2 border-dashed border-slate-200 flex items-center justify-center cursor-pointer overflow-hidden relative">
-                                        <template x-if="u.foto"><img :src="u.foto" class="w-full h-full object-cover"></template>
-                                        <template x-if="!u.foto"><i class="fas fa-camera text-slate-300"></i></template>
-                                        <input type="file" :id="'inputCard' + index" class="hidden" accept="image/*" @change="uploadFotoUnit($event, index)">
-                                    </div>
+                                <div @click="document.getElementById('inputCard' + index).click()" class="col-span-1 aspect-square rounded-2xl bg-white border-2 border-dashed flex items-center justify-center cursor-pointer overflow-hidden">
+                                    <template x-if="u.foto"><img :src="u.foto" class="w-full h-full object-cover"></template>
+                                    <template x-if="!u.foto"><i class="fas fa-camera text-slate-300"></i></template>
+                                    <input type="file" :id="'inputCard' + index" class="hidden" accept="image/*" @change="uploadFotoUnit($event, index)">
                                 </div>
                                 <div class="col-span-2 space-y-2">
                                     <input type="text" x-model="u.nama" placeholder="Nama Tipe" class="w-full p-2 rounded-lg border text-xs font-bold outline-none">
@@ -227,115 +209,133 @@
             <div class="flex justify-center pb-10">
                 <button @click="saveAll()" class="group relative bg-blue-600 hover:bg-blue-700 text-white font-bold py-5 px-20 rounded-[2.5rem] shadow-xl transition-all active:scale-90 flex items-center gap-3 overflow-hidden">
                     <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
-                    <i class="fas fa-rocket text-lg group-hover:animate-bounce"></i>
-                    <span class="text-sm tracking-[0.2em] uppercase">Simpan & Terbitkan Live</span>
+                    <i class="fas fa-rocket text-lg"></i>
+                    <span class="text-sm tracking-[0.2em] uppercase">Simpan & Download JSON</span>
                 </button>
             </div>
         </div>
     </div>
 
     <script>
-      function propertiApp() {
-    return {
-        isLoggedIn: false, 
-        showLogin: false,
-        loginForm: { user: '', pass: '' },
-        
-        // Data State (Akan diisi dari file data.json)
-        unit: { nama: 'Loading...', mapUrl: '' },
-        media: { fotos: [] },
-        fasilitas: [],
-        daftarUnit: [],
-        
-        allFasilitas: [
-            { name: 'Jalan Penghubung', icon: 'fas fa-road' },
-            { name: 'Drainase', icon: 'fas fa-faucet' },
-            { name: 'Taman Bermain', icon: 'fas fa-child' },
-            { name: 'Ruang Terbuka Hijau', icon: 'fas fa-tree' },
-            { name: 'Tempat Ibadah', icon: 'fas fa-mosque' },
-            { name: 'Air Bersih', icon: 'fas fa-tint' },
-            { name: 'Jaringan Listrik', icon: 'fas fa-bolt' }
-        ],
+    function propertiApp() {
+        return {
+            isLoggedIn: false, 
+            showLogin: false,
+            loginForm: { user: '', pass: '' },
+            
+            unit: { nama: 'Residen Nyaman', mapUrl: '' },
+            media: { fotos: [] },
+            fasilitas: [],
+            daftarUnit: [],
+            
+            allFasilitas: [
+                { name: 'Jalan Penghubung', icon: 'fas fa-road' },
+                { name: 'Drainase', icon: 'fas fa-faucet' },
+                { name: 'Taman Bermain', icon: 'fas fa-child' },
+                { name: 'Ruang Terbuka Hijau', icon: 'fas fa-tree' },
+                { name: 'Tempat Ibadah', icon: 'fas fa-mosque' },
+                { name: 'Air Bersih', icon: 'fas fa-tint' },
+                { name: 'Jaringan Listrik', icon: 'fas fa-bolt' }
+            ],
 
-        // 1. OTOMATIS LOAD SAAT WEB DIBUKA
-        async init() {
-            try {
-                // Mengambil data dari file data.json di server/hosting
-                const response = await fetch('data.json?v=' + Date.now()); // Anti-cache
-                const data = await response.json();
+            async init() {
+                try {
+                    // Mencoba load dari data.json yang ada di server
+                    const response = await fetch('data.json?v=' + Date.now());
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.unit = data.unit || { nama: 'Residen Nyaman', mapUrl: '' };
+                        this.media = data.media || { fotos: [] };
+                        this.fasilitas = data.fasilitas || [];
+                        this.daftarUnit = data.daftarUnit || [];
+                    } else {
+                        // Jika file belum ada, gunakan data dari localStorage (fallback)
+                        this.loadFromLocalStorage();
+                    }
+                } catch (e) {
+                    this.loadFromLocalStorage();
+                }
+            },
+
+            loadFromLocalStorage() {
+                this.unit = JSON.parse(localStorage.getItem('saved_unit')) || { nama: 'Residen Nyaman', mapUrl: '' };
+                this.media.fotos = JSON.parse(localStorage.getItem('saved_galeri')) || [];
+                this.fasilitas = JSON.parse(localStorage.getItem('saved_fasilitas')) || [];
+                this.daftarUnit = JSON.parse(localStorage.getItem('unit_unggulan')) || [
+                    { nama: 'Tipe Minimalis', harga: 450000000, spek: '2 KT | 1 KM', foto: '' }
+                ];
+            },
+
+            saveAll() {
+                // 1. Simpan ke LocalStorage agar perubahan langsung terlihat di browser ini
+                localStorage.setItem('saved_unit', JSON.stringify(this.unit));
+                localStorage.setItem('saved_fasilitas', JSON.stringify(this.fasilitas));
+                localStorage.setItem('saved_galeri', JSON.stringify(this.media.fotos));
+                localStorage.setItem('unit_unggulan', JSON.stringify(this.daftarUnit));
+
+                // 2. Generate file data.json untuk diupload ke GitHub
+                const fullData = {
+                    unit: this.unit,
+                    media: this.media,
+                    fasilitas: this.fasilitas,
+                    daftarUnit: this.daftarUnit
+                };
                 
-                this.unit = data.unit;
-                this.media = data.media;
-                this.fasilitas = data.fasilitas;
-                this.daftarUnit = data.daftarUnit;
-            } catch (e) {
-                console.error("Gagal memuat data.json. Pastikan file ada di folder yang sama.");
-                this.unit.nama = "Residen Nyaman (Default)";
-            }
-        },
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullData, null, 2));
+                const downloadAnchorNode = document.createElement('a');
+                downloadAnchorNode.setAttribute("href", dataStr);
+                downloadAnchorNode.setAttribute("download", "data.json");
+                document.body.appendChild(downloadAnchorNode);
+                downloadAnchorNode.click();
+                downloadAnchorNode.remove();
 
-        // 2. FUNGSI UNDUH DATABASE (JSON)
-        downloadJSON() {
-            const fullData = {
-                unit: this.unit,
-                media: this.media,
-                fasilitas: this.fasilitas,
-                daftarUnit: this.daftarUnit
-            };
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: 'File data.json terunduh. Upload file ini ke GitHub untuk update website!',
+                    confirmButtonColor: '#3b82f6'
+                });
+            },
 
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullData, null, 2));
-            const downloadAnchorNode = document.createElement('a');
-            downloadAnchorNode.setAttribute("href", dataStr);
-            downloadAnchorNode.setAttribute("download", "data.json");
-            document.body.appendChild(downloadAnchorNode);
-            downloadAnchorNode.click();
-            downloadAnchorNode.remove();
+            cekLogin() {
+                if(this.loginForm.user === 'admin' && this.loginForm.pass === '12345') {
+                    this.isLoggedIn = true; 
+                    this.showLogin = false;
+                    document.body.classList.replace('bg-slate-900', 'bg-slate-200');
+                } else { 
+                    Swal.fire({ icon: 'error', title: 'Gagal', text: 'User/Pass Salah!' });
+                }
+            },
 
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil Unduh!',
-                text: 'Silakan upload/replace file data.json ini ke hosting Anda agar perubahan tampil ke publik.',
-                confirmButtonColor: '#3b82f6'
-            });
-        },
+            logout() { 
+                this.isLoggedIn = false; 
+                document.body.classList.replace('bg-slate-200', 'bg-slate-900'); 
+            },
 
-        // --- FUNGSI ADMIN LAINNYA ---
-        cekLogin() {
-            if(this.loginForm.user === 'admin' && this.loginForm.pass === '12345') {
-                this.isLoggedIn = true; 
-                this.showLogin = false;
-                document.body.classList.replace('bg-slate-900', 'bg-slate-200');
-            } else { 
-                Swal.fire({ icon: 'error', title: 'Gagal', text: 'User/Pass Salah!' });
-            }
-        },
+            tambahUnitBaru() { 
+                this.daftarUnit.push({ nama: 'Tipe Baru', harga: 0, spek: '', foto: '' }); 
+            },
 
-        logout() { 
-            this.isLoggedIn = false; 
-            document.body.classList.replace('bg-slate-200', 'bg-slate-900'); 
-        },
-
-        tambahUnitBaru() { 
-            this.daftarUnit.push({ nama: 'Tipe Baru', harga: 0, spek: '', foto: '' }); 
-        },
-
-        uploadFotoUnit(event, index) {
-            const file = event.target.files[0];
-            const reader = new FileReader();
-            reader.onload = (e) => { this.daftarUnit[index].foto = e.target.result; };
-            reader.readAsDataURL(file);
-        },
-
-        uploadMedia(event) {
-            Array.from(event.target.files).forEach(file => {
+            uploadFotoUnit(event, index) {
+                const file = event.target.files[0];
                 const reader = new FileReader();
-                reader.onload = (e) => { this.media.fotos.push(e.target.result); };
+                reader.onload = (e) => { this.daftarUnit[index].foto = e.target.result; };
                 reader.readAsDataURL(file);
-            });
-        },
+            },
 
-        formatRupiah(val) { 
-            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val || 0); 
+            uploadMedia(event) {
+                Array.from(event.target.files).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => { this.media.fotos.push(e.target.result); };
+                    reader.readAsDataURL(file);
+                });
+            },
+
+            formatRupiah(val) { 
+                return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val || 0); 
+            }
         }
     }
-}
+    </script>
+</body>
+</html>
