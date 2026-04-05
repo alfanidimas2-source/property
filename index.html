@@ -235,89 +235,107 @@
     </div>
 
     <script>
-        function propertiApp() {
-            return {
-                isLoggedIn: false, 
-                showLogin: false,
-                loginForm: { user: '', pass: '' },
-                unit: JSON.parse(localStorage.getItem('saved_unit')) || { nama: '', mapUrl: '' },
-                media: { fotos: JSON.parse(localStorage.getItem('saved_galeri')) || [] },
-                fasilitas: JSON.parse(localStorage.getItem('saved_fasilitas')) || [],
-                daftarUnit: JSON.parse(localStorage.getItem('unit_unggulan')) || [
-                    { nama: 'Tipe Minimalis Modern', harga: 450000000, spek: '2 KT | 1 KM | Carport', foto: '' }
-                ],
-                allFasilitas: [
-                    { name: 'Jalan Penghubung', icon: 'fas fa-road' },
-                    { name: 'Drainase', icon: 'fas fa-faucet' },
-                    { name: 'Taman Bermain', icon: 'fas fa-child' },
-                    { name: 'Ruang Terbuka Hijau', icon: 'fas fa-tree' },
-                    { name: 'Tempat Ibadah', icon: 'fas fa-mosque' },
-                    { name: 'Air Bersih', icon: 'fas fa-tint' },
-                    { name: 'Jaringan Listrik', icon: 'fas fa-bolt' }
-                ],
+      function propertiApp() {
+    return {
+        isLoggedIn: false, 
+        showLogin: false,
+        loginForm: { user: '', pass: '' },
+        
+        // Data State (Akan diisi dari file data.json)
+        unit: { nama: 'Loading...', mapUrl: '' },
+        media: { fotos: [] },
+        fasilitas: [],
+        daftarUnit: [],
+        
+        allFasilitas: [
+            { name: 'Jalan Penghubung', icon: 'fas fa-road' },
+            { name: 'Drainase', icon: 'fas fa-faucet' },
+            { name: 'Taman Bermain', icon: 'fas fa-child' },
+            { name: 'Ruang Terbuka Hijau', icon: 'fas fa-tree' },
+            { name: 'Tempat Ibadah', icon: 'fas fa-mosque' },
+            { name: 'Air Bersih', icon: 'fas fa-tint' },
+            { name: 'Jaringan Listrik', icon: 'fas fa-bolt' }
+        ],
 
-                cekLogin() {
-                    if(this.loginForm.user === 'admin' && this.loginForm.pass === '12345') {
-                        this.isLoggedIn = true; 
-                        this.showLogin = false;
-                        document.body.classList.replace('bg-slate-900', 'bg-slate-200');
-                    } else { 
-                        Swal.fire({ icon: 'error', title: 'Login Gagal', text: 'Username atau Password salah!', confirmButtonColor: '#ef4444' });
-                    }
-                },
-
-                logout() { 
-                    this.isLoggedIn = false; 
-                    document.body.classList.replace('bg-slate-200', 'bg-slate-900'); 
-                },
-
-                tambahUnitBaru() {
-                    this.daftarUnit.push({ nama: '', harga: '', spek: '', foto: '' });
-                },
-
-                uploadFotoUnit(event, index) {
-                    const file = event.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (e) => { this.daftarUnit[index].foto = e.target.result; };
-                        reader.readAsDataURL(file);
-                    }
-                },
-
-                uploadMedia(event) {
-                    const files = event.target.files;
-                    Array.from(files).forEach(file => {
-                        const reader = new FileReader();
-                        reader.onload = (e) => { this.media.fotos.push(e.target.result); };
-                        reader.readAsDataURL(file);
-                    });
-                },
-
-                saveAll() {
-                    localStorage.setItem('saved_unit', JSON.stringify(this.unit));
-                    localStorage.setItem('saved_fasilitas', JSON.stringify(this.fasilitas));
-                    localStorage.setItem('saved_galeri', JSON.stringify(this.media.fotos));
-                    localStorage.setItem('unit_unggulan', JSON.stringify(this.daftarUnit));
-                    // Membersihkan sisa data info kegiatan jika ada
-                    localStorage.removeItem('info_kegiatan');
-
-                    Swal.fire({
-                        title: 'Berhasil Terbit!',
-                        text: 'Data properti Anda telah diperbarui.',
-                        icon: 'success',
-                        showConfirmButton: false,
-                        timer: 1500,
-                        timerProgressBar: true,
-                        customClass: { popup: 'rounded-[2.5rem] p-10' }
-                    });
-                },
-
-                formatRupiah(val) {
-                    if(!val) return 'Rp 0';
-                    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val);
-                }
+        // 1. OTOMATIS LOAD SAAT WEB DIBUKA
+        async init() {
+            try {
+                // Mengambil data dari file data.json di server/hosting
+                const response = await fetch('data.json?v=' + Date.now()); // Anti-cache
+                const data = await response.json();
+                
+                this.unit = data.unit;
+                this.media = data.media;
+                this.fasilitas = data.fasilitas;
+                this.daftarUnit = data.daftarUnit;
+            } catch (e) {
+                console.error("Gagal memuat data.json. Pastikan file ada di folder yang sama.");
+                this.unit.nama = "Residen Nyaman (Default)";
             }
+        },
+
+        // 2. FUNGSI UNDUH DATABASE (JSON)
+        downloadJSON() {
+            const fullData = {
+                unit: this.unit,
+                media: this.media,
+                fasilitas: this.fasilitas,
+                daftarUnit: this.daftarUnit
+            };
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullData, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "data.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil Unduh!',
+                text: 'Silakan upload/replace file data.json ini ke hosting Anda agar perubahan tampil ke publik.',
+                confirmButtonColor: '#3b82f6'
+            });
+        },
+
+        // --- FUNGSI ADMIN LAINNYA ---
+        cekLogin() {
+            if(this.loginForm.user === 'admin' && this.loginForm.pass === '12345') {
+                this.isLoggedIn = true; 
+                this.showLogin = false;
+                document.body.classList.replace('bg-slate-900', 'bg-slate-200');
+            } else { 
+                Swal.fire({ icon: 'error', title: 'Gagal', text: 'User/Pass Salah!' });
+            }
+        },
+
+        logout() { 
+            this.isLoggedIn = false; 
+            document.body.classList.replace('bg-slate-200', 'bg-slate-900'); 
+        },
+
+        tambahUnitBaru() { 
+            this.daftarUnit.push({ nama: 'Tipe Baru', harga: 0, spek: '', foto: '' }); 
+        },
+
+        uploadFotoUnit(event, index) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (e) => { this.daftarUnit[index].foto = e.target.result; };
+            reader.readAsDataURL(file);
+        },
+
+        uploadMedia(event) {
+            Array.from(event.target.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => { this.media.fotos.push(e.target.result); };
+                reader.readAsDataURL(file);
+            });
+        },
+
+        formatRupiah(val) { 
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val || 0); 
         }
-    </script>
-</body>
-</html>
+    }
+}
