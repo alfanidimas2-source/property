@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Properti | Residen Nyaman</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.5s ease; scroll-behavior: smooth; }
+        
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 50% { transform: translateX(8px); } 75% { transform: translateX(-8px); } }
+        .animate-shake { animation: shake 0.4s ease-in-out; border: 2px solid #ef4444 !important; }
+        
+        @keyframes shrinkFade {
+            0% { transform: scale(1); opacity: 1; filter: blur(0); }
+            100% { transform: scale(0.8); opacity: 0; filter: blur(10px); }
+        }
+        .animate-delete { animation: shrinkFade 0.4s ease forwards; }
+
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+
+        .facility-check:checked + .fac-card { background-color: #eff6ff; border-color: #3b82f6; }
+        .facility-check:checked + .fac-card i { color: #2563eb; }
+        .facility-check:checked + .fac-card p { color: #1e40af; }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .swal2-popup {
+            padding: 2rem !important;
+            border-radius: 2.5rem !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+        }
+    </style>
+</head>
+<body x-data="propertiApp()" class="bg-slate-900 min-h-screen flex items-center justify-center p-4">
+
+    <div x-show="!isLoggedIn" class="fixed inset-0 bg-slate-50 overflow-y-auto text-slate-800" x-transition>
+        <nav class="fixed w-full z-50 glass border-b border-slate-200">
+            <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+                <a href="#" class="text-2xl font-bold text-blue-700 tracking-tight uppercase">Residen<span class="text-slate-800">Nyaman</span></a>
+                <div class="hidden md:flex items-center space-x-8 font-semibold text-sm uppercase tracking-wider">
+                    <a href="#hero" class="hover:text-blue-600 transition">Beranda</a>
+                    <a href="#unit-unggulan" class="hover:text-blue-600 transition">Unit Properti</a>
+                    <a href="#fasilitas" class="hover:text-blue-600 transition">Fasilitas</a>
+                    <a href="#lokasi" class="hover:text-blue-600 transition">Hubungi Kami</a>
+                    <button @click="showLogin = true" class="text-slate-400 hover:text-blue-600 transition"><i class="fas fa-lock mr-1"></i> Admin</button>
+                </div>
+            </div>
+        </nav>
+
+        <section id="hero" class="relative h-[70vh] flex items-center pt-20 overflow-hidden">
+            <div class="absolute inset-0 z-0">
+                <template x-if="media.fotos.length > 0">
+                    <img :src="media.fotos[0]" class="w-full h-full object-cover">
+                </template>
+                <template x-if="media.fotos.length === 0">
+                    <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=80" class="w-full h-full object-cover">
+                </template>
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
+            </div>
+            <div class="relative z-10 max-w-7xl mx-auto px-6 w-full text-white">
+                <h1 class="text-5xl md:text-6xl font-bold mt-6 leading-tight" x-text="unit.nama || 'Hunian Impian Keluarga'"></h1>
+                <p class="mt-4 text-lg opacity-90 max-w-xl">Temukan kenyamanan terbaik untuk masa depan Anda.</p>
+            </div>
+        </section>
+
+        <section id="unit-unggulan" class="py-24 bg-white">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl font-bold text-slate-800">Unit Unggulan Kami</h2>
+                    <div class="w-20 h-1 bg-emerald-500 mx-auto mt-4"></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <template x-for="(u, index) in daftarUnit" :key="index">
+                        <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100 group">
+                            <div class="h-64 overflow-hidden">
+                                <img :src="u.foto || 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800'" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+                            </div>
+                            <div class="p-8">
+                                <p class="text-2xl font-black text-emerald-600 mb-2" x-text="formatRupiah(u.harga)"></p>
+                                <h3 class="text-xl font-bold text-slate-800 mb-1" x-text="u.nama"></h3>
+                                <p class="text-sm text-slate-400 mb-6" x-text="u.spek"></p>
+                                <a :href="'https://wa.me/628123456789?text=Halo, saya tanya detail unit ' + u.nama" class="block text-center bg-emerald-500 text-white py-3 rounded-xl font-bold hover:bg-emerald-600 transition shadow-lg shadow-emerald-100">Tanya Detail</a>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </section>
+
+        <section id="fasilitas" class="py-24 bg-slate-50">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl font-bold text-slate-800">Fasilitas Hunian</h2>
+                    <p class="text-slate-500 mt-2 text-sm">Kenyamanan lengkap untuk kualitas hidup yang lebih baik</p>
+                    <div class="w-20 h-1 bg-blue-500 mx-auto mt-4"></div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-6">
+                    <template x-for="item in allFasilitas" :key="item.name">
+                        <template x-if="fasilitas.includes(item.name)">
+                            <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col items-center justify-center transition-all duration-500 hover:shadow-xl hover:-translate-y-2 group">
+                                <div class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mb-4 group-hover:bg-blue-600 transition-colors duration-300">
+                                    <i :class="item.icon" class="text-blue-600 text-xl group-hover:text-white"></i>
+                                </div>
+                                <p class="text-[10px] font-bold text-slate-700 uppercase tracking-wider text-center" x-text="item.name"></p>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+            </div>
+        </section>
+
+        <section id="lokasi" class="py-24 bg-slate-100">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="rounded-[3rem] overflow-hidden shadow-2xl h-[400px]">
+                    <template x-if="unit.mapUrl">
+                        <iframe :src="unit.mapUrl" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                    </template>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div x-show="showLogin && !isLoggedIn" class="max-w-md w-full bg-white rounded-[3rem] shadow-2xl p-10 z-[60]" x-transition>
+        <h2 class="text-2xl font-bold text-center text-gray-800 mb-8">Admin Login</h2>
+        <div class="space-y-4">
+            <input type="text" x-model="loginForm.user" placeholder="Username" class="w-full px-6 py-4 rounded-2xl bg-gray-50 border outline-none focus:border-blue-500">
+            <input type="password" x-model="loginForm.pass" placeholder="Password" class="w-full px-6 py-4 rounded-2xl bg-gray-50 border outline-none focus:border-blue-500">
+            <button @click="cekLogin()" class="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-blue-700 transition uppercase tracking-widest text-xs">Masuk</button>
+            <button @click="showLogin = false" class="w-full text-gray-400 text-[10px] font-bold uppercase py-2">Tutup</button>
+        </div>
+    </div>
+
+    <div x-show="isLoggedIn" class="w-full max-w-6xl bg-slate-50 min-h-[90vh] rounded-[3rem] shadow-2xl overflow-hidden flex flex-col z-[50]" x-transition>
+        <header class="bg-white p-6 shadow-sm flex justify-between items-center border-b px-10">
+            <h1 class="text-xl font-bold text-blue-900 uppercase">Admin Panel</h1>
+            <button @click="logout()" class="bg-red-50 text-red-600 px-6 py-2 rounded-xl font-bold text-xs hover:bg-red-100 transition">Logout</button>
+        </header>
+
+        <div class="p-8 space-y-10 overflow-y-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="space-y-6 bg-white p-8 rounded-[2.5rem] shadow-sm border">
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-4">1. Manajemen Data Utama</label>
+                    <input type="text" x-model="unit.nama" placeholder="Nama Perumahan" class="w-full p-4 rounded-2xl bg-gray-50 border outline-none focus:border-blue-500">
+                    <textarea x-model="unit.mapUrl" placeholder="Maps Embed URL" class="w-full p-4 h-24 rounded-2xl bg-gray-50 border outline-none text-xs focus:border-blue-500"></textarea>
+                </div>
+
+                <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border">
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-4">2. Fasilitas Unggulan</label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <template x-for="item in allFasilitas" :key="item.name">
+                            <label class="cursor-pointer">
+                                <input type="checkbox" :value="item.name" x-model="fasilitas" class="facility-check hidden">
+                                <div class="fac-card p-3 rounded-xl bg-gray-50 border-2 border-transparent text-center h-full flex flex-col items-center justify-center transition hover:border-blue-200">
+                                    <i :class="item.icon" class="text-gray-400 text-xs mb-1"></i>
+                                    <p class="text-[7px] font-bold text-gray-500 uppercase" x-text="item.name"></p>
+                                </div>
+                            </label>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border">
+                <div class="flex justify-between items-center mb-8">
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">3. Unit Unggulan (Card View)</label>
+                    <button @click="tambahUnitBaru()" class="bg-blue-600 text-white px-5 py-2 rounded-xl font-bold text-xs shadow-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-plus mr-2"></i> Tambah Card
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <template x-for="(u, index) in daftarUnit" :key="index">
+                        <div class="p-6 border-2 border-slate-100 rounded-[2rem] bg-slate-50 relative transition-all duration-300">
+                            <button @click="daftarUnit.splice(index, 1)" class="absolute -top-2 -right-2 bg-red-500 text-white w-8 h-8 rounded-full shadow-lg hover:bg-red-600 transition z-10">
+                                <i class="fas fa-times text-xs"></i>
+                            </button>
+                            
+                            <div class="grid grid-cols-3 gap-4">
+                                <div class="col-span-1">
+                                    <div @click="document.getElementById('inputCard' + index).click()" class="w-full aspect-square rounded-2xl bg-white border-2 border-dashed border-slate-200 flex items-center justify-center cursor-pointer overflow-hidden relative">
+                                        <template x-if="u.foto"><img :src="u.foto" class="w-full h-full object-cover"></template>
+                                        <template x-if="!u.foto"><i class="fas fa-camera text-slate-300"></i></template>
+                                        <input type="file" :id="'inputCard' + index" class="hidden" accept="image/*" @change="uploadFotoUnit($event, index)">
+                                    </div>
+                                </div>
+                                <div class="col-span-2 space-y-2">
+                                    <input type="text" x-model="u.nama" placeholder="Nama Tipe" class="w-full p-2 rounded-lg border text-xs font-bold outline-none">
+                                    <input type="number" x-model="u.harga" placeholder="Harga" class="w-full p-2 rounded-lg border text-xs text-emerald-600 font-bold outline-none">
+                                    <input type="text" x-model="u.spek" placeholder="Spek (KT/KM)" class="w-full p-2 rounded-lg border text-[10px] text-slate-500 outline-none">
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border">
+                <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-4">4. Galeri Media Utama</label>
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <template x-for="(foto, index) in media.fotos" :key="index">
+                        <div class="relative aspect-square rounded-2xl overflow-hidden group border">
+                            <img :src="foto" class="w-full h-full object-cover">
+                            <button @click="media.fotos.splice(index, 1)" class="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-xl opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                                <i class="fas fa-trash-alt text-xs"></i>
+                            </button>
+                        </div>
+                    </template>
+                    <button @click="$refs.inputFotoUtama.click()" class="aspect-square border-2 border-dashed border-blue-200 rounded-2xl flex flex-col items-center justify-center hover:bg-blue-50 transition text-blue-400">
+                        <i class="fas fa-plus-circle text-2xl"></i>
+                        <input type="file" x-ref="inputFotoUtama" class="hidden" accept="image/*" multiple @change="uploadMedia($event)">
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex justify-center pb-10">
+                <button @click="saveAll()" class="group relative bg-blue-600 hover:bg-blue-700 text-white font-bold py-5 px-20 rounded-[2.5rem] shadow-xl transition-all active:scale-90 flex items-center gap-3 overflow-hidden">
+                    <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                    <i class="fas fa-rocket text-lg group-hover:animate-bounce"></i>
+                    <span class="text-sm tracking-[0.2em] uppercase">Simpan & Terbitkan Live</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function propertiApp() {
+            return {
+                isLoggedIn: false, 
+                showLogin: false,
+                loginForm: { user: '', pass: '' },
+                unit: JSON.parse(localStorage.getItem('saved_unit')) || { nama: '', mapUrl: '' },
+                media: { fotos: JSON.parse(localStorage.getItem('saved_galeri')) || [] },
+                fasilitas: JSON.parse(localStorage.getItem('saved_fasilitas')) || [],
+                daftarUnit: JSON.parse(localStorage.getItem('unit_unggulan')) || [
+                    { nama: 'Tipe Minimalis Modern', harga: 450000000, spek: '2 KT | 1 KM | Carport', foto: '' }
+                ],
+                allFasilitas: [
+                    { name: 'Jalan Penghubung', icon: 'fas fa-road' },
+                    { name: 'Drainase', icon: 'fas fa-faucet' },
+                    { name: 'Taman Bermain', icon: 'fas fa-child' },
+                    { name: 'Ruang Terbuka Hijau', icon: 'fas fa-tree' },
+                    { name: 'Tempat Ibadah', icon: 'fas fa-mosque' },
+                    { name: 'Air Bersih', icon: 'fas fa-tint' },
+                    { name: 'Jaringan Listrik', icon: 'fas fa-bolt' }
+                ],
+
+                cekLogin() {
+                    if(this.loginForm.user === 'admin' && this.loginForm.pass === '12345') {
+                        this.isLoggedIn = true; 
+                        this.showLogin = false;
+                        document.body.classList.replace('bg-slate-900', 'bg-slate-200');
+                    } else { 
+                        Swal.fire({ icon: 'error', title: 'Login Gagal', text: 'Username atau Password salah!', confirmButtonColor: '#ef4444' });
+                    }
+                },
+
+                logout() { 
+                    this.isLoggedIn = false; 
+                    document.body.classList.replace('bg-slate-200', 'bg-slate-900'); 
+                },
+
+                tambahUnitBaru() {
+                    this.daftarUnit.push({ nama: '', harga: '', spek: '', foto: '' });
+                },
+
+                uploadFotoUnit(event, index) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => { this.daftarUnit[index].foto = e.target.result; };
+                        reader.readAsDataURL(file);
+                    }
+                },
+
+                uploadMedia(event) {
+                    const files = event.target.files;
+                    Array.from(files).forEach(file => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => { this.media.fotos.push(e.target.result); };
+                        reader.readAsDataURL(file);
+                    });
+                },
+
+                saveAll() {
+                    localStorage.setItem('saved_unit', JSON.stringify(this.unit));
+                    localStorage.setItem('saved_fasilitas', JSON.stringify(this.fasilitas));
+                    localStorage.setItem('saved_galeri', JSON.stringify(this.media.fotos));
+                    localStorage.setItem('unit_unggulan', JSON.stringify(this.daftarUnit));
+                    // Membersihkan sisa data info kegiatan jika ada
+                    localStorage.removeItem('info_kegiatan');
+
+                    Swal.fire({
+                        title: 'Berhasil Terbit!',
+                        text: 'Data properti Anda telah diperbarui.',
+                        icon: 'success',
+                        showConfirmButton: false,
+                        timer: 1500,
+                        timerProgressBar: true,
+                        customClass: { popup: 'rounded-[2.5rem] p-10' }
+                    });
+                },
+
+                formatRupiah(val) {
+                    if(!val) return 'Rp 0';
+                    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

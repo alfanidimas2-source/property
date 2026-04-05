@@ -1,0 +1,74 @@
+/* main.css */
+
+/* 1. Import Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap');
+
+/* 2. Base Styles */
+body { 
+    font-family: 'Plus Jakarta Sans', sans-serif; 
+    transition: all 0.5s ease; 
+    scroll-behavior: smooth; 
+}
+
+/* 3. Custom Utilities & Glassmorphism */
+.glass { 
+    background: rgba(255, 255, 255, 0.95); 
+    backdrop-filter: blur(10px); 
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.hide-scrollbar::-webkit-scrollbar { 
+    display: none; 
+}
+
+.hide-scrollbar { 
+    -ms-overflow-style: none; 
+    scrollbar-width: none; 
+}
+
+/* 4. Animations */
+@keyframes shake { 
+    0%, 100% { transform: translateX(0); } 
+    25% { transform: translateX(-8px); } 
+    50% { transform: translateX(8px); } 
+    75% { transform: translateX(-8px); } 
+}
+
+.animate-shake { 
+    animation: shake 0.4s ease-in-out; 
+    border: 2px solid #ef4444 !important; 
+}
+
+@keyframes shrinkFade {
+    0% { transform: scale(1); opacity: 1; filter: blur(0); }
+    100% { transform: scale(0.8); opacity: 0; filter: blur(10px); }
+}
+
+.animate-delete { 
+    animation: shrinkFade 0.4s ease forwards; 
+}
+
+@keyframes shimmer {
+    100% { transform: translateX(100%); }
+}
+
+/* 5. Component Styles (Facility Cards) */
+.facility-check:checked + .fac-card { 
+    background-color: #eff6ff; 
+    border-color: #3b82f6; 
+}
+
+.facility-check:checked + .fac-card i { 
+    color: #2563eb; 
+}
+
+.facility-check:checked + .fac-card p { 
+    color: #1e40af; 
+}
+
+/* 6. Vendor Overrides (SweetAlert2) */
+.swal2-popup {
+    padding: 2rem !important;
+    border-radius: 2.5rem !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
